@@ -1,0 +1,662 @@
+#least cost method
+
+import numpy as np
+row=int(input('Please enter number of rows: '))
+column=int(input('Please enter number of columns: '))
+total_cost=0;count=0
+matrix=np.zeros(row*column)
+matrix=matrix.reshape(row,column)
+for i in range(row):
+    for j in range(column):
+        print('Enter value for (',i,',',j,')th entry : ',end =" ")
+        matrix[i][j]=int(input())
+
+cost_matrix=matrix[0:row-1,0:column-1]
+demand=matrix[row-1,0:column-1]
+supply=matrix[0:row-1,column-1]
+print('cost matrix : \n',cost_matrix,'\ndemand : ',demand,'\nSupply : ',supply)
+"""condition for balanced matrix"""
+if(demand.sum()==supply.sum()):
+    while(cost_matrix.size>0):
+        count=count+1
+        current_min=cost_matrix.min()
+        indices = np.where(cost_matrix == current_min)
+        listOfCoordinates= list(zip(indices[0], indices[1]))
+        min_row=listOfCoordinates[0][0]
+        min_column=listOfCoordinates[0][1]
+        '''when demand is less than or equal to supply'''
+        if((demand[min_column])<=(supply[min_row])):
+            total_cost+=current_min*demand[min_column]
+            supply[min_row]-=demand[min_column]
+            demand=np.delete(demand,min_column)
+            cost_matrix=np.delete(cost_matrix,min_column,axis=1)
+            '''when supply is less than demand'''
+        else:
+            total_cost+=current_min*supply[min_row]
+            demand[min_column]-=supply[min_row]
+            supply=np.delete(supply,min_row)
+            cost_matrix=np.delete(cost_matrix,min_row,axis=0)
+    print('Total Cost : ',total_cost)
+    print('Number of iterations: ',count)
+else:
+    print('The matrix is not balanced.')
+
+
+
+
+
+
+
+#VAM
+
+
+
+import numpy as np
+
+n=int(input('Please enter number of rows: '))
+m=int(input('Please enter number of columns: '))
+total_cost=0;count=0
+matrix=np.zeros(n*m)
+matrix=matrix.reshape(n,m)
+for i in range(n):
+    for j in range(m):
+        print('Enter value for (',i,',',j,')th entry : ',end =" ")
+        matrix[i][j]=int(input())
+total_cost=0
+cost_matrix=matrix[0:n-1,0:m-1]
+demand=matrix[n-1,0:m-1]
+supply=matrix[0:n-1,m-1]
+print('cost matrix : \n',cost_matrix,'\ndemand : ',demand,'\nSupply : ',supply)
+if(demand.sum()==supply.sum()):
+    while((n-1>1) and (m-1>1)):
+        row_penalty=np.zeros(n-1)
+        column_penalty=np.zeros(m-1)
+        #Findings Row penalty
+        for i in range(n-1):
+            row_slice=cost_matrix[i,0:m-1]
+            min_value1=row_slice.min()
+            index1=np.argmin(row_slice)
+            row_slice=np.delete(row_slice,index1)
+            min_value2=row_slice.min()
+            row_penalty[i]=abs(min_value1-min_value2)
+        #Findings column penalty
+        for i in range(m-1):
+            column_slice=cost_matrix[0:n-1,i]
+            min_value1=column_slice.min()
+            index1=np.argmin(column_slice)
+            column_slice=np.delete(column_slice,index1)
+            min_value2=column_slice.min()
+            column_penalty[i]=abs(min_value1-min_value2)
+        curr_max=row_penalty.max() if row_penalty.max()>column_penalty.max() else column_penalty.max()
+        indices1 = np.where(row_penalty == curr_max)
+        indices2 = np.where(column_penalty == curr_max)
+        max_min=999999;
+        min_row=int()
+        min_column=int()
+        '''row max'''
+        if(len(indices1[0])>0):
+            for x in indices1:
+                for a in x:
+                    row_index=int(a)
+                    select_row = cost_matrix[row_index,0:m-1]
+                    select_min=select_row.min()
+                    if(max_min>select_min):
+                        max_min=select_min
+                        min_row=row_index
+                        min_column=np.argmin(select_row)
+        '''column max'''
+        if(len(indices2[0])>0):
+            for x in indices2:
+                for a in x:
+                    col_index=int(a)
+                    select_col = cost_matrix[0:n-1,col_index]
+                    select_min=select_col.min()
+                    if(max_min>select_min):
+                        max_min=select_min
+                        min_row=np.argmin(select_col)
+                        min_column=col_index
+        if((demand[min_column])<=(supply[min_row])):
+            m-=1
+            total_cost+=max_min*demand[min_column]
+            supply[min_row]-=demand[min_column]
+            demand=np.delete(demand,min_column)
+            cost_matrix=np.delete(cost_matrix,min_column,axis=1)
+            '''when supply is less than demand'''
+        else:
+            n-=1
+            total_cost+=max_min*supply[min_row]
+            demand[min_column]-=supply[min_row]
+            supply=np.delete(supply,min_row)
+            cost_matrix=np.delete(cost_matrix,min_row,axis=0)
+    while(cost_matrix.size>0):
+        if(n-1==1):
+            select_min=cost_matrix.min()
+            mi=np.argmin(cost_matrix)
+            if(demand[mi]<supply[0]):
+                total_cost+=select_min*demand[mi]
+                supply[0]-=demand[mi]
+                demand=np.delete(demand,mi)
+                cost_matrix=np.delete(cost_matrix,mi,axis=1)
+            else:
+                total_cost+=select_min*supply[0]
+                demand[mi]-=supply[0]
+                supply=np.delete(supply,0)
+                cost_matrix=np.delete(cost_matrix,0,axis=1)
+        else:
+            select_min=cost_matrix.min()
+            mi=np.argmin(cost_matrix)
+            if(demand[0]<supply[mi]):
+                total_cost+=select_min*demand[0]
+                supply[mi]-=demand[0]
+                demand=np.delete(demand,0)
+                cost_matrix=np.delete(cost_matrix,0,axis=0)
+            else:
+                total_cost+=select_min*supply[mi]
+                demand[0]-=supply[mi]
+                supply=np.delete(supply,mi)
+                cost_matrix=np.delete(cost_matrix,mi,axis=0)
+    print('Total Cost : ',total_cost)
+else:
+    print("the matrix is not balanced.")
+
+
+
+
+
+
+#modified
+
+
+
+
+from collections import Counter
+import numpy as np
+def get_ui_vi(initialsol,costs):
+    ui = [None] * len(costs)
+    vi = [None] * len(costs[0])
+    x=list()
+    y=list()
+    initialsol_copy = initialsol.copy()
+    for val in initialsol_copy:
+        i,j=val[0]
+        x.append(i)
+        y.append(j)
+    occurence_count_x = Counter(x)
+    occurence_count_y = Counter(y)
+    if(occurence_count_x.most_common(1)[0][1]<occurence_count_y.most_common(1)[0][1]):
+        vi[occurence_count_y.most_common(1)[0][0]]=0
+    else:
+        ui[occurence_count_x.most_common(1)[0][0]]=0
+    while(int(len(initialsol_copy)>0)):
+        
+        for index,val in enumerate(initialsol_copy):
+            i, j = val[0]
+            if ui[i] is None and vi[j] is None: continue
+            cost = costs[i][j]
+            if ui[i] is None:
+                ui[i] = cost - vi[j]
+            else: 
+                vi[j] = cost - ui[i]
+            initialsol_copy.pop(index)
+            index+=1
+            break
+    return ui,vi
+
+def get_ws(bfs, costs, us, vs):
+    ws = []
+    for i, row in enumerate(costs):
+        for j, cost in enumerate(row):
+            non_basic = all([p[0] != i or p[1] != j for p, v in bfs])
+            if non_basic:
+                ws.append(((i, j), us[i] + vs[j] - cost))
+    
+    return ws
+def can_be_improved(ws):
+    for p, v in ws:
+        if v > 0: return True
+    return False
+
+def get_entering_variable_position(ws):
+    ws_copy = ws.copy()
+    ws_copy.sort(key=lambda w: w[1])
+    return ws_copy[-1][0]
+
+def get_possible_next_nodes(loop, not_visited):
+    last_node = loop[-1]
+    nodes_in_row = [n for n in not_visited if n[0] == last_node[0]]
+    nodes_in_column = [n for n in not_visited if n[1] == last_node[1]]
+    if len(loop) < 2:
+        return nodes_in_row + nodes_in_column
+    else:
+        prev_node = loop[-2]
+        row_move = prev_node[0] == last_node[0]
+        if row_move: return nodes_in_column
+        return nodes_in_row
+    
+def get_loop(bv_positions, ev_position):
+    def inner(loop):
+        if len(loop) > 3:
+            can_be_closed = len(get_possible_next_nodes(loop, [ev_position])) == 1
+            if can_be_closed: return loop
+        
+        not_visited = list(set(bv_positions) - set(loop))
+        possible_next_nodes = get_possible_next_nodes(loop, not_visited)
+        for next_node in possible_next_nodes:
+            new_loop = inner(loop + [next_node])
+            if new_loop: return new_loop
+    
+    return inner([ev_position])
+def loop_pivoting(bfs, loop):
+    even_cells = loop[0::2]
+    odd_cells = loop[1::2]
+    get_bv = lambda pos: next(v for p, v in bfs if p == pos)
+    leaving_position = sorted(odd_cells, key=get_bv)[0]
+    leaving_value = get_bv(leaving_position)
+    new_bfs = []
+    for p, v in [bv for bv in bfs if bv[0] != leaving_position] + [(loop[0], 0)]:
+        if p in even_cells:
+            v += leaving_value
+        elif p in odd_cells:
+            v -= leaving_value
+        new_bfs.append((p, v))
+    return new_bfs
+def modi_method(supply, demand, costs,bfs, penalties = None):
+    balanced_costs = costs
+    def inner(bfs):
+        us, vs = get_ui_vi(bfs, balanced_costs)
+        ws = get_ws(bfs, balanced_costs, us, vs)
+        if can_be_improved(ws):
+            ev_position = get_entering_variable_position(ws)
+            loop = get_loop([p for p, v in bfs], ev_position)
+            return inner(loop_pivoting(bfs, loop))
+        return bfs
+
+    basic_variables = inner(bfs)
+    solution = np.zeros((len(costs), len(costs[0])))
+    for (i, j), v in basic_variables:
+        solution[i][j] = v
+
+    return solution
+def get_total_cost(costs, solution):
+    total_cost = 0
+    for i, row in enumerate(costs):
+        for j, cost in enumerate(row):
+            total_cost += cost * solution[i][j]
+    return total_cost
+costs = [
+    [ 19,30,50,10],
+    [70,30,40,60],
+    [ 40,8,70,20]
+]
+supply = [7,9,18]
+demand = [5,8,7,14]
+bfs = [((0, 0), 5),
+              ((0, 3), 2),
+              ((1, 2), 7),
+              ((1, 3), 2),
+              ((2, 1), 8),
+              ((2, 3), 10)
+]
+print('Supply :\n',supply,'\nDemand : \n',demand,'\nBasic initial feasible solution: \n',bfs)
+solution = modi_method(supply, demand, costs,bfs)
+print('Optimal Solution: \n',solution)
+print('total cost: ', get_total_cost(costs, solution))
+
+
+
+
+
+#north west
+
+
+
+
+
+import numpy as np
+def north_west_corner(supply, demand):
+    supply_copy = supply.copy()
+    demand_copy = demand.copy()
+    i = 0
+    j = 0
+    bfs = []
+    while len(bfs) < len(supply) + len(demand) - 1:
+        s = supply_copy[i]
+        d = demand_copy[j]
+        v = min(s, d)
+        supply_copy[i] -= v
+        demand_copy[j] -= v
+        bfs.append(((i, j), v))
+        if supply_copy[i] == 0 and i < len(supply) - 1:
+            i += 1
+        elif demand_copy[j] == 0 and j < len(demand) - 1:
+            j += 1
+    return bfs
+
+def get_total_cost(costs, bfs):
+    total_cost = 0
+    solution = np.zeros((len(costs), len(costs[0])))
+    for (i, j), v in bfs:
+        solution[i][j] = v
+    for i, row in enumerate(costs):
+        for j, cost in enumerate(row):
+            total_cost += cost * solution[i][j]
+    return total_cost
+
+costs = [
+    [ 2, 2, 2, 1],
+    [10, 8, 5, 4],
+    [ 7, 6, 6, 8]
+]
+supply = [30, 70, 50]
+demand = [40, 30, 40, 40]
+bfs = north_west_corner(supply, demand)
+print(get_total_cost(costs,bfs))
+
+
+
+
+
+#lagrange
+
+
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+import random
+from math import *
+	
+delta = 0.1
+minXY = -5.0
+maxXY = 5.0
+nContour = 50
+
+def dfunc(d):
+    x = d[0]
+    y = d[1]
+    l = d[2]
+    dx = -2 * l + 4 * x * (x ** 2 + y - 11)
+    dy = l + 2 * x * x + 2 * y - 22
+    dl = -2 * x + y - 1
+    return [dx, dy, dl]
+
+def SampleFunc(x, y):
+    return (x ** 2 + y - 11) ** 2
+
+def ConstrainFunction(x):
+    return (2.0 * x + 1.0)
+def CreateMeshData():
+    x = np.arange(minXY, maxXY, delta)
+    y = np.arange(minXY, maxXY, delta)
+    X, Y = np.meshgrid(x, y)
+    Z = [SampleFunc(ix, iy) for (ix, iy) in zip(X, Y)]
+    return(X, Y, Z)
+# Main
+start = np.matrix([random.uniform(minXY, maxXY),
+                   random.uniform(minXY, maxXY), 0])
+
+(X, Y, Z) = CreateMeshData()
+CS = plt.contour(X, Y, Z, nContour)
+
+Xc = np.arange(minXY, maxXY, delta)
+Yc = [ConstrainFunction(x) for x in Xc]
+#  plt.plot(start[0,0],start[0,1],"xr");
+plt.plot(Xc, Yc, "-r")
+#  X1 = fsolve(dfunc, [-3, -3, 10])
+#  print(X1)
+#  print(dfunc(X1))
+# the answer from sympy
+result = np.matrix([
+    [-1, -1],
+    [-1 + sqrt(11), -1 + 2 * sqrt(11)],
+    [-sqrt(11) - 1, -2 * sqrt(11) - 1]])
+print(result)
+plt.plot(result[:, 0], result[:, 1], "or")
+plt.axis([minXY, maxXY, minXY, maxXY])
+plt.show()
+
+
+
+
+
+#hugarian
+
+
+
+import numpy as np
+mat=np.array(([82,83,69,92],
+              [77,37,49,92],
+              [11,69,5,86],
+              [8,9,98,23]
+))
+mat1=np.copy(mat)
+(n,m)=(4,4)
+print(" Cost Matrix")
+print(mat)
+for i in range(n):
+	temp=mat[i][:]
+	mi=min(temp)
+	for j in range(m):
+		mat[i][j]-=mi
+print("Updated cost matrix after row operation ")
+print(mat)		
+
+for j in range(m):
+	mi=float("inf")
+	for i in range(m):
+		mi=min(mi,mat[i][j])
+	for i in range(n):
+		mat[i][j]-=mi
+		
+print("Updated cost matrix after col operation ")
+print(mat)
+tell=0
+while(1):
+	count=0
+	visited=np.zeros((n,m)) 
+	for i in range(n):
+		c=0
+		for j in range(m):
+			if(mat[i][j]==0):
+				c+=1
+		if(c>1):
+			for j in range(m):
+				visited[i][j]+=1
+			count+=1	
+				
+	for j in range(m):
+		c=0
+		for i in range(m):
+			if(mat[i][j]==0 and visited[i][j]==0):
+				c+=1
+		if(c>1):
+			for i in range(n):
+				visited[i][j]+=1
+			count+=1	
+	
+	for j in range(n):
+		for i in range(n):
+			if(mat[i][j]==0 and visited[i][j]==0):
+				count+=1
+				for k in range(n):
+					visited[k][j]+=1
+				
+	for i in range(n):
+		for j in range(n):
+			if(mat[i][j]==0 and visited[i][j]==0):
+				count+=1
+				for k in range(n):
+					visited[i][k]+=1				
+
+	print("count of no of lines ",count)
+	if(count>=n):
+		print("Count of no of lines is greater equal to required ")
+		print("Optimal condition reached ")
+		break
+	ma=float("inf")	
+	for i in range(n):
+		for j in range(n):
+			if(visited[i][j]!=0):
+				continue
+			e=mat[i][j]
+			ma=min(ma,e)
+	print(" Minimum no to substract to the uncovered cost and to be added to intersected cost",ma)		
+	for i in range(n):
+		for j in range(m):
+			if(visited[i][j]==0):
+				mat[i][j]-=ma
+			elif(visited[i][j]>1):
+				mat[i][j]+=ma	
+	
+	print("Updated cost matrix: \n",mat)
+								
+res=0
+machine=np.zeros(n)
+job=arr = np.zeros(m)	
+for i in range(n):
+		c=0
+		for j in range(m):
+			if(mat[i][j]==0):
+				c+=1
+	
+		if(c==1):
+			machine[i]=1
+			for j in range(m):
+				if(mat[i][j]==0):
+					job[j]=1
+					res+=mat1[i][j]
+					print("Assigned worker ",i+1," to  job ",j+1) 
+					break
+					
+for i in range(n):
+	if(machine[i]==0):
+		for j in range(n):
+			if(mat[i][j]==0 and job[j]==0):
+				res+=mat1[i][j]
+				print("Assigned worker ",i+1," to  job ",j+1) 
+				job[j]=1
+				break					
+		
+print("The total cost of this optimal assignment is",res)
+
+
+
+
+#simplex method
+
+
+
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Nov  4 20:55:21 2019
+
+@author: BITTU
+"""
+
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Oct 15 17:04:34 2019
+
+
+"""
+import numpy as np
+
+matrix=np.array([[1,1,1,0,450],[2,1,0,1,600]])
+
+row,col=np.shape(matrix)
+
+CBi=[0,0]
+
+Ci=[12,16,0,0]
+
+Zj=[0 for i in range(col)]
+
+BaseArray=[0 for i in range(col-1)]
+
+
+print(row," ",col)
+
+#calculating optimal solution
+while(sum(BaseArray)>=0):
+    #calculation Zj vector using formula Zj=Cbi[i]*matrix[i][j]
+    for i in range(1):
+        for j in range(col):
+            Zj[j]=CBi[i]*matrix[i][j]
+    
+    print("Zj=",Zj)
+    #calculating Ci-Zj values and storing it in BaseArray      
+    for k in range(col-1):     
+        BaseArray[k]=Ci[k]-Zj[k]
+    
+    print("BaseArray",BaseArray)
+    
+    #compute ratio vector
+    Ratio=matrix[0:row,col-1]
+    print(Ratio)
+    
+    #finding max element from Ci-Zj and min element from solution vctor
+    maxelem=max(BaseArray)
+    print("maxelem",maxelem)
+    
+    #calculatig index for corresponding max and min elements
+    maxelemindex=int(np.where(BaseArray == maxelem)[0])
+    column_slice=matrix[:,maxelemindex]
+    for i in range(len(Ratio)):
+        Ratio[i]=int(matrix[i][col-1]/column_slice[i])
+        
+    print("After updation",Ratio)   
+    minelem=min(Ratio)
+    print("minelem",minelem)
+    minelemindex=int(np.where(Ratio == minelem)[0])
+    print("minelemindex",minelemindex)
+    print("maxelemindex",maxelemindex)
+    
+    
+    row_slice=matrix[minelemindex,0:col-1]
+    print("column_slice",column_slice)
+    print("row_slice",row_slice)
+    
+    print(matrix[minelemindex-1,minelemindex:col])
+    
+    key_element=matrix[minelemindex][maxelemindex]
+    
+    print("key_element",key_element)
+    
+    #updating row with key element
+    row_slice[:] = [x/key_element for x in row_slice]
+    
+    solution=0
+    count=0
+    kcv=column_slice[minelemindex-1]
+    #updating values in the other row
+    for y in matrix[minelemindex-1,minelemindex:col]:
+        krv=matrix[minelemindex,count]
+        count+=1
+        print("kcv=",kcv," krv=",krv)
+        y=y-int((kcv*krv)/key_element)
+        print(y)
+        
+    #updating CBi vector with the value of Entry value,i.e value in Ci array at the index of key element
+    CBi[minelemindex]=Ci[maxelemindex]
+    print("CBi",CBi)
+    
+    
+    print("sum of basearray=",sum(BaseArray))
+    print(BaseArray)
+    
+    for i in range(1):
+        for j in range(col):
+            Zj[j]=CBi[i]*matrix[i][j]
+    
+    print("Zj=",Zj)
+    solution=Zj[col-1]
+    print("solution=",solution)
+       
+    for k in range(col-1):     
+        BaseArray[k]=Ci[k]-Zj[k]
+    
+    print("BaseArray",BaseArray)
+    
+    for i in range(len(Ratio)):
+        Ratio[i]=matrix[i][col-1]/column_slice[i]
+    
